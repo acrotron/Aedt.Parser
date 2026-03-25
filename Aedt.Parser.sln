@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11520.95 d18.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aedt.Parser", "Aedt.Parser\Aedt.Parser.csproj", "{063A8542-8510-EBDE-A98C-AF4933817D95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aedt.Parser.Tests", "Aedt.ParserTests\Aedt.Parser.Tests.csproj", "{BE1C70FB-BC1D-9A0E-2652-879C06E77AAE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{063A8542-8510-EBDE-A98C-AF4933817D95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{063A8542-8510-EBDE-A98C-AF4933817D95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{063A8542-8510-EBDE-A98C-AF4933817D95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{063A8542-8510-EBDE-A98C-AF4933817D95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE1C70FB-BC1D-9A0E-2652-879C06E77AAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE1C70FB-BC1D-9A0E-2652-879C06E77AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE1C70FB-BC1D-9A0E-2652-879C06E77AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE1C70FB-BC1D-9A0E-2652-879C06E77AAE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E780E36B-2551-4578-B28D-2F61B4F63CDC}
+	EndGlobalSection
+EndGlobal

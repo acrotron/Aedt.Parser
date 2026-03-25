@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="AwesomeAssertions" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="MSTest.TestAdapter" />
+		<PackageReference Include="MSTest.TestFramework" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Aedt.Parser\Aedt.Parser.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="DGBBoxes_J10.csv">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="DGNoiseValues_J6.csv">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="PRBPolygon_J1010.csv">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+</Project>
