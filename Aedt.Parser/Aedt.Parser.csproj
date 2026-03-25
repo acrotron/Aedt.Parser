@@ -1,4 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PackageId>Aedt.Parser</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>Bjorn Kuiper</Authors>
+		<Description>A library for parsing AEDT (Aviation Environmental Design Tool) files, including bounding box and receptor data extraction with spatial geometry support.</Description>
+		<PackageTags>aedt;parser;aviation;environmental;geospatial;bounding-box</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/acrotron/Aedt.Parser</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="NetTopologySuite" />
 		<PackageReference Include="ProjNET4GeoAPI" />
