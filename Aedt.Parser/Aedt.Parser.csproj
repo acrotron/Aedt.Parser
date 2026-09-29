@@ -19,7 +19,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="NetTopologySuite" />
-		<PackageReference Include="ProjNET4GeoAPI" />
 	</ItemGroup>
 
 </Project>

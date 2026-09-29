@@ -77,7 +77,6 @@ The CSV file should contain longitude, latitude, and value per line:
 ## Dependencies
 
 - [NetTopologySuite](https://www.nuget.org/packages/NetTopologySuite) - Spatial geometry operations
-- [ProjNET4GeoAPI](https://www.nuget.org/packages/ProjNET4GeoAPI) - Coordinate system transformations
 
 ## License
 
