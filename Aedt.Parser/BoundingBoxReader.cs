@@ -1,81 +1,94 @@
-﻿using System.Globalization;
+using Aedt.Parser.Exceptions;
 using NetTopologySuite.Geometries;
 
 namespace Aedt.Parser;
 
+/// <summary>
+/// Reads AEDT bounding polygon and bounding box CSV files.
+/// Coordinates are rounded to 5 decimals (about 1 m).
+/// </summary>
 public sealed class BoundingBoxReader
 {
+    /// <summary>
+    /// Reads a polygon file (e.g. PRBPolygon) with one <c>longitude, latitude</c> vertex per line.
+    /// Blank lines and the <c>END</c> trailer are skipped.
+    /// </summary>
+    /// <param name="filePath">Path of the CSV file.</param>
+    /// <returns>A bounding box with the vertices in file order.</returns>
+    /// <exception cref="AedtFormatException">A line does not have exactly two numeric fields.</exception>
     public BoundingBox ReadPolygon(string filePath)
     {
         BoundingBox boundingBox = new BoundingBox();
         using StreamReader reader = new StreamReader(filePath);
 
+        int lineNumber = 0;
+
         while (reader.ReadLine() is { } line)
         {
-            // Parse each line of the .grd file
-            // Assuming each line contains values corresponding to a grid row
-            string[] values = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            lineNumber++;
 
-            if (values.Length > 1)
+            if (AedtCsvLine.IsSkipped(line)) continue;
+
+            string[] values = AedtCsvLine.Split(line);
+
+            if (values.Length != 2)
             {
-                // Convert value to double, assuming it represents the associated value at this grid point
-                string @long = values[0];
-                string lat = values[1];
-
-                // Assuming a specific grid resolution, we can calculate lat/lon
-                // For simplicity, assuming fixed lat/lon increments (e.g., 1 degree per row/col)
-                // Modify the following as needed based on your .grd file specifications
-                double longitude = Math.Round(double.Parse(@long, NumberFormatInfo.InvariantInfo), 5);
-                double latitude = Math.Round(double.Parse(lat, NumberFormatInfo.InvariantInfo), 5);
-
-                // Create a coordinate with NetTopologySuite
-                Coordinate point = new Coordinate(longitude, latitude);
-
-                // You can associate the value with the point here (e.g., store in a dictionary, or attach attributes)
-                // For now, we just add the point to the list
-                boundingBox.Coordinates.Add(point);
+                throw new AedtFormatException(filePath, lineNumber, line,
+                    $"Expected 2 fields (longitude, latitude) but found {values.Length}.");
             }
+
+            boundingBox.Coordinates.Add(ParseCoordinate(values, 0, filePath, lineNumber, line));
         }
 
         return boundingBox;
     }
 
+    /// <summary>
+    /// Reads a bounding box file (e.g. DGBBoxes) with one box per line, given as <c>longitude, latitude</c> pairs.
+    /// Blank lines and the <c>END</c> trailer are skipped.
+    /// </summary>
+    /// <param name="filePath">Path of the CSV file.</param>
+    /// <returns>One bounding box per line.</returns>
+    /// <exception cref="AedtFormatException">A line has an odd number of fields or a field that is not a number.</exception>
     public BoundingBoxCollection ReadBoundingBoxes(string filePath)
     {
-        BoundingBoxCollection points = new BoundingBoxCollection();
+        BoundingBoxCollection boxes = new BoundingBoxCollection();
         using StreamReader reader = new StreamReader(filePath);
+
+        int lineNumber = 0;
 
         while (reader.ReadLine() is { } line)
         {
+            lineNumber++;
+
+            if (AedtCsvLine.IsSkipped(line)) continue;
+
+            string[] values = AedtCsvLine.Split(line);
+
+            if (values.Length % 2 != 0)
+            {
+                throw new AedtFormatException(filePath, lineNumber, line,
+                    $"Expected longitude, latitude pairs but found {values.Length} fields.");
+            }
+
             BoundingBox boundingBox = new BoundingBox();
 
-            // Parse each line of the .grd file
-            // Assuming each line contains values corresponding to a grid row
-            string[] values = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
-
-            if (values.Length > 0 && values.Length % 2 == 0)
+            for (int i = 0; i < values.Length; i += 2)
             {
-                for (int i = 0; i < values.Length; i += 2)
-                {
-                    string @long = values[i];
-                    string lat = values[i+1];
-
-                    // Assuming a specific grid resolution, we can calculate lat/lon
-                    // For simplicity, assuming fixed lat/lon increments (e.g., 1 degree per row/col)
-                    // Modify the following as needed based on your .grd file specifications
-                    double longitude = Math.Round(double.Parse(@long, NumberFormatInfo.InvariantInfo), 5);
-                    double latitude = Math.Round(double.Parse(lat, NumberFormatInfo.InvariantInfo), 5);
-
-                    // Create a coordinate with NetTopologySuite
-                    boundingBox.Coordinates.Add(new Coordinate(longitude, latitude));
-                }
-
-                // You can associate the value with the point here (e.g., store in a dictionary, or attach attributes)
-                // For now, we just add the point to the list
-                points.Add(boundingBox);
+                boundingBox.Coordinates.Add(ParseCoordinate(values, i, filePath, lineNumber, line));
             }
+
+            boxes.Add(boundingBox);
         }
 
-        return points;
+        return boxes;
+    }
+
+    private static Coordinate ParseCoordinate(string[] values, int index, string filePath, int lineNumber, string line)
+    {
+        double longitude = Math.Round(AedtCsvLine.ParseDouble(values[index], filePath, lineNumber, line), 5);
+        double latitude = Math.Round(AedtCsvLine.ParseDouble(values[index + 1], filePath, lineNumber, line), 5);
+
+        return new Coordinate(longitude, latitude);
     }
 }

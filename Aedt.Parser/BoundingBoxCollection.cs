@@ -1,15 +1,21 @@
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Geometries.Utilities;
 
 namespace Aedt.Parser;
 
+/// <summary>
+/// The bounding boxes read from an AEDT bounding box file.
+/// </summary>
 public class BoundingBoxCollection : List<BoundingBox>
 {
     /// <summary>
     /// Returns the merged bounding geometry as a single valid Polygon.
-    /// Self-intersecting polygons (staircase patterns from AEDT CSV files) are
-    /// fixed using Buffer(0), which splits them into valid parts. Degenerate
-    /// slivers are discarded and the remaining parts are unioned into a single polygon.
+    /// Invalid boxes (e.g. self-intersecting staircase patterns from AEDT CSV files) are repaired with
+    /// <see cref="GeometryFixer"/>, which keeps the full area of every lobe. Degenerate boxes and slivers are
+    /// discarded, and the remaining parts are unioned. When the union falls apart into separate polygons, only the
+    /// largest one is returned.
     /// </summary>
+    /// <exception cref="InvalidOperationException">No box has a non-zero area.</exception>
     public Polygon Polygon()
     {
         List<Geometry> parts = new List<Geometry>();
@@ -18,33 +24,27 @@ public class BoundingBoxCollection : List<BoundingBox>
         {
             Polygon polygon = boundingBox.Polygon();
 
-            if (!polygon.IsValid)
-            {
-                // Buffer(0) fixes self-intersections by splitting into valid parts.
-                // This may produce a MultiPolygon with degenerate slivers that we filter out.
-                Geometry? repaired = polygon.Buffer(0);
-
-                if (repaired is MultiPolygon multiPolygon)
-                {
-                    double maxArea = multiPolygon.Max(g => g.Area);
-                    double threshold = maxArea * 1e-6;
-
-                    foreach (Geometry? geometry in multiPolygon.Geometries)
-                    {
-                        if (geometry.Area > threshold)
-                        {
-                            parts.Add(geometry);
-                        }
-                    }                }
-                else
-                {
-                    parts.Add(repaired);
-                }
-            }
-            else
+            if (polygon.IsValid)
             {
                 parts.Add(polygon);
+                continue;
             }
+
+            Geometry repaired = GeometryFixer.Fix(polygon);
+
+            if (repaired is MultiPolygon multiPolygon)
+            {
+                // Drop degenerate slivers left over from the repair.
+                double threshold = multiPolygon.Max(g => g.Area) * 1e-6;
+
+                parts.AddRange(multiPolygon.Geometries.Where(g => g.Area > threshold));
+            }
+            else if (repaired is Polygon { IsEmpty: false } repairedPolygon)
+            {
+                parts.Add(repairedPolygon);
+            }
+
+            // Anything else is a box that collapsed to nothing (e.g. collinear points).
         }
 
         if (parts.Count == 0)
@@ -57,13 +57,12 @@ public class BoundingBoxCollection : List<BoundingBox>
             return (Polygon)parts[0];
         }
 
-        Geometry? union = new GeometryCollection(parts.ToArray()).Union();
+        Geometry union = new GeometryCollection(parts.ToArray()).Union();
 
         return union switch
         {
             Polygon polygon => polygon,
-            // If the union is a MultiPolygon, we take the largest part as the representative polygon.
-            // we don't support separated bounding boxes, so we ignore smaller parts.
+            // Separate bounding areas are not supported, so only the largest part is kept.
             MultiPolygon mp => (Polygon)mp.OrderByDescending(g => g.Area).First(),
             _ => throw new InvalidOperationException($"Unexpected geometry type: {union.GeometryType}")
         };
