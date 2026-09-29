@@ -1,5 +1,8 @@
-﻿namespace Aedt.Parser.Exceptions;
+namespace Aedt.Parser.Exceptions;
 
-public class NoCoordinatesFoundException : Exception
+/// <summary>
+/// Thrown when a polygon is requested from a bounding box that has no coordinates.
+/// </summary>
+public class NoCoordinatesFoundException() : Exception("The bounding box has no coordinates.")
 {
 }
